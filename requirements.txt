@@ -6,3 +6,6 @@ fastapi
 uvicorn
 streamlit
 pytest
+shap
+matplotlib
+psycopg2-binary

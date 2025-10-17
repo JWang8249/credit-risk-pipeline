@@ -12,7 +12,8 @@ st.title("💳 Credit Risk Prediction App")
 st.markdown("This app predicts whether a credit card client is **High Risk** or **Low Risk** based on financial data.")
 
 # FastAPI endpoint
-API_URL = "http://127.0.0.1:8000/predict"
+API_URL = "http://creditrisk-api:8000/predict"
+
 
 # -------------------------------
 # Input Fields

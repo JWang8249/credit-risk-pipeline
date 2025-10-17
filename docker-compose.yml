@@ -1,13 +1,38 @@
 version: '3.8'
+
 services:
   api:
     build: .
+    container_name: creditrisk-api
     command: uvicorn src.api:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: credit_risk
+      DB_USER: postgres
+      DB_PASSWORD: yourpassword
 
   app:
     build: .
+    container_name: creditrisk-app
     command: streamlit run src/app.py --server.port=8501 --server.address=0.0.0.0
     ports:
       - "8501:8501"
+    depends_on:
+      - api
+
+  db:
+    image: postgres:14
+    container_name: creditrisk-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: yourpassword
+      POSTGRES_DB: credit_risk
+    ports:
+      - "5432:5432"
+

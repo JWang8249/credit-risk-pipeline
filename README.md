@@ -1,206 +1,253 @@
-# 💳 Credit Risk Prediction Pipeline
+# Credit Risk Prediction Pipeline
 
-A fully reproducible machine learning pipeline for **credit card default risk prediction**, built with **Python**, **scikit-learn**, **FastAPI**, **Streamlit**, and **Docker**.  
-This project automates the process from data preprocessing to model training, evaluation, API deployment, and web app integration — and includes full Docker support for easy deployment.
-
----
-
-## 🧠 Overview
-
-This project predicts whether a credit card client will default next month based on financial and demographic data.
-
-**Pipeline includes:**
-1. Data preprocessing and feature scaling  
-2. Model training with logistic regression  
-3. Evaluation with precision, recall, and F1-score  
-4. REST API backend (FastAPI)  
-5. Web frontend (Streamlit)  
-6. Docker containerization for reproducibility and deployment  
+A complete and reproducible **Machine Learning pipeline** for predicting credit default risk — including **data preprocessing**, **model training**, **explainability with SHAP**, **FastAPI backend**, **Streamlit frontend**, and **PostgreSQL persistence**, all containerized via **Docker** and **automated with CI/CD**.
 
 ---
 
-## 🧩 Project Structure
+## 👤 Author
+
+**Jingyi Wang**  
+Master’s Student in *Data Science and Society (Business Track)*  
+Tilburg University, The Netherlands  
+Version: **v2.0.0** (2025-10)  
+Status: ✅ Fully reproducible and containerized
+
+---
+
+## 🧩 Overview
+
+This project demonstrates a **modular and reproducible ML workflow**:
+
+1. 📊 **Data preprocessing** (`src/data_preprocess.py`)  
+2. 🤖 **Model training** (`src/model_train.py`)  
+3. 📈 **Evaluation + Explainability** (SHAP visualization)  
+4. ⚙️ **FastAPI REST service** for predictions  
+5. 🖥️ **Streamlit web app** for interactive user input  
+6. 🗄️ **PostgreSQL** for saving predictions  
+7. 🤮 **Pytest** for automated testing  
+8. 🐳 **Docker & Docker Compose** for environment reproducibility  
+9. 🚦 **CI/CD pipeline** with GitHub Actions
+
+---
+
+## ⚙️ Project Structure
 
 ```
 credit-risk-pipeline/
-│
 ├── data/
-│   ├── raw/
-│   │   └── credit_data.csv
-│   └── processed/
-│
+│   ├── processed/credit_data_clean.csv
+│   ├── raw/credit_data.csv
+├── docs/
+│   ├── shap_summary.png
+│   ├── shap_feature_importance.png
 ├── models/
 │   ├── model.pkl
-│   └── scaler.pkl
-│
+│   ├── scaler.pkl
 ├── src/
+│   ├── api.py
+│   ├── app.py
 │   ├── data_preprocess.py
 │   ├── model_train.py
 │   ├── model_eval.py
-│   ├── api.py
-│   └── app.py
-│
-├── tests/
 │   └── test_model.py
-│
-├── Makefile
+├── tests/
+│   └── test_api.py
 ├── Dockerfile
 ├── docker-compose.yml
+├── Makefile
 ├── requirements.txt
 └── README.md
 ```
 
 ---
 
-## ⚙️ Installation (Local)
+## 🚀 How to Run Locally
 
-### 1️⃣ Create and activate conda environment
+### 1️⃣ Prepare Environment
 ```bash
-conda create -n creditrisk python=3.10 -y
+conda create -n creditrisk python=3.10
 conda activate creditrisk
-```
-
-### 2️⃣ Install dependencies
-```bash
 pip install -r requirements.txt
 ```
 
-### 3️⃣ Train the model
+### 2️⃣ Preprocess Data
+```bash
+python src/data_preprocess.py
+```
+
+### 3️⃣ Train Model
 ```bash
 make train
 ```
 
-### 4️⃣ Evaluate the model
+### 4️⃣ Evaluate with SHAP
 ```bash
 make eval
 ```
+Generated visuals:
+- `docs/shap_summary.png`
+- `docs/shap_feature_importance.png`
 
----
-
-## 🚀 Run Locally
-
-### 🔹 Start FastAPI backend
+### 5️⃣ Run API
 ```bash
 make serve
 ```
-Access API Docs: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+Visit 🔗 http://127.0.0.1:8000/docs
 
-### 🔹 Start Streamlit frontend
+### 6️⃣ Run Streamlit App
 ```bash
 make app
 ```
-Access App: [http://localhost:8501](http://localhost:8501)
+Visit 🔗 http://127.0.0.1:8501
 
 ---
 
-## 🐳 Docker Deployment
+## 🐳 Run with Docker
 
-### 🧱 1. Build Docker Image
+### 1️⃣ Build Image
 ```bash
-docker build -t creditrisk-app .
+docker build -t creditrisk-api .
 ```
 
-### ▶️ 2. Run with FastAPI
+### 2️⃣ Run API
 ```bash
-docker run -d -p 8000:8000 creditrisk-app uvicorn src.api:app --host 0.0.0.0 --port 8000
+docker run -p 8000:8000 creditrisk-api
 ```
-Access API at: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-### ▶️ 3. Run with Streamlit
+### 3️⃣ Test Endpoint
 ```bash
-docker run -d -p 8501:8501 creditrisk-app streamlit run src/app.py --server.port=8501 --server.address=0.0.0.0
-```
-Access App at: [http://localhost:8501](http://localhost:8501)
-
----
-
-## 🧰 Dockerfile Example
-
-```dockerfile
-# ---------- Base image ----------
-FROM python:3.10-slim
-
-# ---------- Set working directory ----------
-WORKDIR /app
-
-# ---------- Copy project files ----------
-COPY . /app
-
-# ---------- Install dependencies ----------
-RUN pip install --no-cache-dir -r requirements.txt
-
-# ---------- Expose ports ----------
-EXPOSE 8000 8501
-
-# ---------- Default command ----------
-CMD ["streamlit", "run", "src/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+curl -X POST "http://127.0.0.1:8000/predict" \
+-H "Content-Type: application/json" \
+-d "{\"LIMIT_BAL\":20000, \"SEX\":1, \"EDUCATION\":2, \"MARRIAGE\":1, \"AGE\":35}"
 ```
 
 ---
 
-## ⚙️ docker-compose.yml Example
+## 🧱 docker-compose: Multi-Container Setup
 
-```yaml
-version: '3.8'
+Run the full stack (API + Streamlit + PostgreSQL):
 
-services:
-  api:
-    build: .
-    container_name: creditrisk-api
-    command: uvicorn src.api:app --host 0.0.0.0 --port 8000
-    ports:
-      - "8000:8000"
-
-  app:
-    build: .
-    container_name: creditrisk-app
-    command: streamlit run src/app.py --server.port=8501 --server.address=0.0.0.0
-    ports:
-      - "8501:8501"
-```
-
-### ▶️ Run both services
 ```bash
-docker-compose up
+docker-compose up -d
 ```
-Then visit:  
-- FastAPI → [http://localhost:8000/docs](http://localhost:8000/docs)  
-- Streamlit → [http://localhost:8501](http://localhost:8501)
+
+Services:
+| Service | Port | Description |
+|----------|------|-------------|
+| `creditrisk-db` | 5432 | PostgreSQL database |
+| `creditrisk-api` | 8000 | FastAPI model server |
+| `creditrisk-app` | 8501 | Streamlit frontend |
+
+Then open:
+- http://127.0.0.1:8000/docs → FastAPI
+- http://127.0.0.1:8501 → Streamlit App
 
 ---
 
-## 🧾 Example Output
+## 🤓 SHAP Explainability
 
-| Scenario | Output | Meaning |
-|-----------|---------|---------|
-| Low-risk client | ✅ `{"prediction": 0, "risk": "Low Risk"}` | Client likely to repay |
-| High-risk client | 🚨 `{"prediction": 1, "risk": "High Risk"}` | Client likely to default |
+The pipeline integrates **SHAP (SHapley Additive exPlanations)** to interpret model predictions.
 
----
+### Example Output:
+| File | Description |
+|------|--------------|
+| `docs/shap_summary.png` | Feature importance summary |
+| `docs/shap_feature_importance.png` | Bar plot of top drivers |
 
-## 🧠 Author
-
-**Jingyi Wang (Justin)**  
-📍 Tilburg University — MSc Data Science and Society  
-✉️ J.Wang@tilburguniversity.edu  
-🐙 GitHub: [@JWang8249](https://github.com/JWang8249)
-
----
-
-## 🧩 Future Improvements
-
-- [ ] Integrate model explainability (SHAP, LIME)  
-- [ ] Add PostgreSQL database for persistent storage  
-- [ ] CI/CD pipeline with GitHub Actions  
-- [ ] Deploy on AWS/GCP via Docker containers  
+```python
+import shap
+explainer = shap.Explainer(model, X_scaled)
+shap_values = explainer(X_scaled)
+shap.summary_plot(shap_values, X, show=False)
+```
 
 ---
 
-## 📄 License
+## 🔄 CI/CD Pipeline (GitHub Actions)
+
+File: `.github/workflows/ci.yml`
+
+### CI Stages:
+1. **Checkout repo**
+2. **Set up Python environment**
+3. **Install dependencies**
+4. **Run unit tests (pytest)**
+5. **Build Docker image**
+
+Badge example:
+[![CI](https://github.com/tcsai/credit-risk-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/tcsai/credit-risk-pipeline/actions/workflows/ci.yml)
+
+This ensures every commit is:
+- ✅ Lint-checked
+- ✅ Tested
+- ✅ Docker-buildable
+
+---
+
+## 🤪 Testing
+
+Run automated tests:
+```bash
+make test
+```
+
+Tests include:
+- Model loading  
+- Prediction correctness  
+- API endpoint validation  
+- Database integration  
+
+---
+
+## 📊 Example Prediction
+
+Input:
+```json
+{
+  "LIMIT_BAL": 20000,
+  "SEX": 1,
+  "EDUCATION": 2,
+  "MARRIAGE": 1,
+  "AGE": 35
+}
+```
+
+Output:
+```json
+{
+  "prediction": 0,
+  "risk": "Low Risk"
+}
+```
+
+All predictions are logged in PostgreSQL table `predictions`.
+
+---
+
+## 📦 Makefile Commands
+
+| Command | Description |
+|----------|--------------|
+| `make train` | Train the model |
+| `make eval` | Evaluate and generate SHAP |
+| `make serve` | Start FastAPI server |
+| `make app` | Run Streamlit frontend |
+| `make test` | Run all pytest scripts |
+| `make all` | Run full pipeline (train → eval → test) |
+
+---
+
+## 🧠 Key Learnings
+
+- Building reproducible ML pipelines requires clear separation between **training**, **serving**, and **testing**.  
+- Docker + CI/CD ensures deterministic builds.  
+- SHAP provides interpretable insights essential for **Law + AI** applications.  
+
+---
+
+## 📜 License
 
 Licensed under the **MIT License**.  
-Feel free to use and modify for educational or research purposes.
+Feel free to fork and adapt for your own data science portfolio.
 
 ---
-
-> _“From raw data to deployed intelligence — now fully containerized.”_ 🚀
