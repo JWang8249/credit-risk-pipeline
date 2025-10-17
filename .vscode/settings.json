@@ -1,0 +1,8 @@
+{
+    "python.terminal.activateEnvironment": true,
+    "terminal.integrated.shellArgs.windows": [
+        "-noexit",
+        "-command",
+        "& conda activate creditrisk"
+    ]
+}
